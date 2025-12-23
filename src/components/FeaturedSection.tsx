@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ChevronRight, Car, Users } from "lucide-react";
+import hypercarImage from "@/assets/car-hypercar.jpg";
+import electricImage from "@/assets/car-electric.jpg";
 
 export const FeaturedSection = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -28,10 +30,11 @@ export const FeaturedSection = () => {
     {
       icon: Car,
       title: "Premium Collection",
-      description: "From Formula 1 to hypercars, explore the fastest machines on the planet with immersive 360° views and detailed specifications.",
+      description: "From Formula 1 to hypercars, explore the fastest machines on the planet with immersive views and detailed specifications.",
       link: "/cars",
       linkText: "Browse Cars",
       gradient: "from-primary/20 to-transparent",
+      image: hypercarImage,
     },
     {
       icon: Users,
@@ -40,6 +43,7 @@ export const FeaturedSection = () => {
       link: "/drivers",
       linkText: "View Drivers",
       gradient: "from-racing-cyan/20 to-transparent",
+      image: electricImage,
     },
   ];
 
@@ -76,6 +80,12 @@ export const FeaturedSection = () => {
               }`}
               style={{ transitionDelay: `${(index + 1) * 200}ms` }}
             >
+              {/* Background Image */}
+              {feature.image && (
+                <div className="absolute inset-0 opacity-20">
+                  <img src={feature.image} alt="" className="w-full h-full object-cover" />
+                </div>
+              )}
               <div className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-50`} />
               
               <div className="relative z-10">
