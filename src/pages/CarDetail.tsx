@@ -4,8 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { TelemetryProgress } from "@/components/TelemetryProgress";
+import { Car3DViewer } from "@/components/Car3DViewer";
 import { Button } from "@/components/ui/button";
-import { Loader2, ArrowLeft, Heart, Gauge, Zap, Timer, RotateCcw } from "lucide-react";
+import { Loader2, ArrowLeft, Heart, Gauge, Zap, Timer, Box, Image } from "lucide-react";
 import { toast } from "sonner";
 import { Helmet } from "react-helmet-async";
 import { cn } from "@/lib/utils";
@@ -30,8 +31,7 @@ const CarDetail = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isFavorite, setIsFavorite] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
-  const [rotationAngle, setRotationAngle] = useState(0);
-  const [viewMode, setViewMode] = useState<"exterior" | "interior">("exterior");
+  const [viewMode, setViewMode] = useState<"3d" | "image">("3d");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -99,8 +99,18 @@ const CarDetail = () => {
     }
   };
 
-  const handleRotate = () => {
-    setRotationAngle((prev) => prev + 45);
+  // Get car color based on brand
+  const getCarColor = () => {
+    const colorMap: Record<string, string> = {
+      "Ferrari": "#dc2626",
+      "McLaren": "#f97316",
+      "Red Bull Racing": "#1e3a8a",
+      "Mercedes-AMG": "#00d4aa",
+      "Aston Martin": "#166534",
+      "Tesla": "#ef4444",
+      "Rimac": "#3b82f6",
+    };
+    return colorMap[car?.brand || ""] || "#ef4444";
   };
 
   if (isLoading) {
@@ -155,50 +165,51 @@ const CarDetail = () => {
             <div className="grid lg:grid-cols-2 gap-12 items-start">
               {/* Car Viewer */}
               <div className="relative">
-                <div className="cockpit-frame aspect-[4/3] bg-carbon-gradient relative overflow-hidden">
-                  {car.image_url ? (
-                    <img
-                      src={viewMode === "interior" && car.interior_image_url ? car.interior_image_url : car.image_url}
-                      alt={car.name}
-                      className="w-full h-full object-cover transition-transform duration-700"
-                      style={{ transform: `rotateY(${rotationAngle}deg) scale(1.1)` }}
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <Gauge className="w-24 h-24 text-muted-foreground/30" />
-                    </div>
-                  )}
-                  
-                  {/* Overlay gradient */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
-                </div>
-
-                {/* Controls */}
-                <div className="flex items-center justify-center gap-4 mt-4">
+                {/* View mode toggle */}
+                <div className="flex items-center gap-2 mb-4">
                   <Button
-                    variant="carbon"
+                    variant={viewMode === "3d" ? "racing" : "carbon"}
                     size="sm"
-                    onClick={handleRotate}
+                    onClick={() => setViewMode("3d")}
                     className="gap-2"
                   >
-                    <RotateCcw className="w-4 h-4" />
-                    Rotate
+                    <Box className="w-4 h-4" />
+                    3D View
                   </Button>
                   <Button
-                    variant={viewMode === "exterior" ? "racing" : "carbon"}
+                    variant={viewMode === "image" ? "racing" : "carbon"}
                     size="sm"
-                    onClick={() => setViewMode("exterior")}
+                    onClick={() => setViewMode("image")}
+                    className="gap-2"
                   >
-                    Exterior
-                  </Button>
-                  <Button
-                    variant={viewMode === "interior" ? "racing" : "carbon"}
-                    size="sm"
-                    onClick={() => setViewMode("interior")}
-                  >
-                    Cockpit
+                    <Image className="w-4 h-4" />
+                    Photo
                   </Button>
                 </div>
+
+                {viewMode === "3d" ? (
+                  <Car3DViewer 
+                    carType={car.car_type} 
+                    color={getCarColor()}
+                  />
+                ) : (
+                  <div className="cockpit-frame aspect-[4/3] bg-carbon-gradient relative overflow-hidden">
+                    {car.image_url ? (
+                      <img
+                        src={car.image_url}
+                        alt={car.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Gauge className="w-24 h-24 text-muted-foreground/30" />
+                      </div>
+                    )}
+                    
+                    {/* Overlay gradient */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
+                  </div>
+                )}
               </div>
 
               {/* Car Info */}
